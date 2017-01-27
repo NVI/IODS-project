@@ -1,8 +1,9 @@
 ---
 title: "IODS course project"
+author: "Niko Ilomäki"
 output:
   html_document:
-    theme: cosmo
+    theme: spacelab
     toc: true
     toc_depth: 2
     fig_caption: true
