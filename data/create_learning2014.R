@@ -6,7 +6,7 @@ library(magrittr)
 library(dplyr)
 
 # using magrittr operators:
-# %>% passes result of left-hand side as first argument of right-hand side and return RHS
+# %>% passes result of left-hand side to right-hand side as first argument and returns RHS
 # %T>% works similarly, but returns LHS
 
 learning2014 <-
