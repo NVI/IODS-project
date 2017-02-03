@@ -1,7 +1,56 @@
-# Insert chapter 2 title here
+# Linear regression
 
-*Describe the work you have done this week and summarize your learning.*
+```{r load_libraries, echo = FALSE, warning = FALSE}
+library(ggplot2)
+library(GGally)
+```
 
-- Describe your work and results clearly. 
-- Assume the reader has an introductory course level understanding of writing and reading R code as well as statistical methods
-- Assume the reader has no previous knowledge of your data or the more advanced methods you are using  
+```{r load_data, echo = FALSE}
+learning2014 <- read.csv("data/learning2014.csv")
+```
+
+We are looking at the dataset learning2014. Here is a summary of the dataset:
+
+```{r structural_overview, echo = FALSE, out.width = '\\maxwidth'}
+str(learning2014)
+```
+
+This dataset of learning results (as measured by exam points) and possibly explanatory variables consists of 166 observations and 7 variables. Here is a graphical overview of the dataset:
+
+```{r graphical_overview, echo = FALSE, out.width = '\\maxwidth'}
+ggpairs(learning2014, mapping = aes(col = gender, alpha = 0.2), lower = list(combo = wrap("facethist", bins = 25)))
+```
+
+There is somewhat high correlation between attitude and points, but otherwise the variables are pretty uncorrelated. All variables have mostly similar distributions for both genders. Genders are marked with coloring.
+
+```{r multiple_regression, echo = FALSE, out.width = '\\maxwidth'}
+first_model <- lm(learning2014$points ~ learning2014$attitude + learning2014$stra + learning2014$surf)
+summary(first_model)
+```
+
+We first try multiple regression, but strategic and surface learning do not have statistical significance as explainers of exam points. We thus limit ourselves to simple regression with attitude:
+
+```{r simple_regression, echo = FALSE, out.width = '\\maxwidth'}
+second_model <- lm(learning2014$points ~ learning2014$attitude)
+summary(second_model)
+```
+
+There is very high statistical significance for attitude as explainer of exam points.
+
+```{r fit_plot, echo = FALSE, out.width = '\\maxwidth'}
+plot(second_model, which = 1)
+```
+
+Constant variance of errors assumption holds well.
+
+```{r qq_plot, echo = FALSE, out.width = '\\maxwidth'}
+plot(second_model, which = 2)
+```
+
+The QQ plot implies that the errors have reasonably normal distribution, though there are some problems in both extremes.
+
+```{r leverage_plot, echo = FALSE, out.width = '\\maxwidth'}
+plot(second_model, which = 5)
+```
+
+No observation has abnormally large leverage, making the model seem more reasonable.
