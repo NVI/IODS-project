@@ -1,0 +1,109 @@
+# Logistic regression
+
+```{r load_libraries, warning = FALSE}
+library(ggplot2)
+library(GGally)
+library(tibble)
+library(magrittr)
+library(boot)
+```
+
+```{r load_data}
+alc <- read.csv("data/alc.csv")
+```
+
+We are looking at the [UCI Student Alcohol Consumption dataset](https://archive.ics.uci.edu/ml/datasets/STUDENT+ALCOHOL+CONSUMPTION). Here is a glimpse of it:
+
+```{r structural_overview}
+glimpse(alc)
+```
+
+We will study relationships of high/low alcohol consumption and other variables. For the sake of this exercise, other variables are 'activities' (has extracurricular activities), 'freetime' (amount of free time after school), 'goout' (amount of going out with friends) and 'health' (current health status). Working hypothesis would be that an increase in any of the first three or a decrease in the last one implies assumed higher alcohol consumption. The relationships might not be that strong though.
+
+We will first take a look at activities:
+
+```{r activities}
+table(high_use = alc$high_use, activities = alc$activities)
+plot(ggplot(alc, aes(x = activities)) + geom_bar(aes(fill = high_use)))
+```
+
+Here it seems there is pretty much no relation between high alcohol consumption and extracurricular activies, so the working hypothesis is false; in fact, the small difference in this set of observations actually goes to the opposite direction.
+
+Next we will look at free time:
+
+```{r freetime}
+table(high_use = alc$high_use, freetime = alc$freetime)
+plot(ggplot(alc, aes(x = freetime)) + geom_bar(aes(fill = high_use)))
+```
+
+Preliminarily the working hypothesis seems much better here: there are not many students who consume lots of alcohol while not having much free time after school, but considerable portion of the students with the most free time consume lots of alcohol.
+
+Variable that measures going out with friends might behave somewhat similarly, so we will take a look at it:
+
+```{r goout}
+table(high_use = alc$high_use, goout = alc$goout)
+plot(ggplot(alc, aes(x = goout)) + geom_bar(aes(fill = high_use)))
+```
+
+Indeed, the first observations are very similar to free time variable and the relationship seems to be even stronger here.
+
+Lastly, we will take a look at health:
+
+```{r health}
+table(high_use = alc$high_use, health = alc$health)
+plot(ggplot(alc, aes(x = health)) + geom_bar(aes(fill = high_use)))
+```
+
+Here we see that the biggest portion of students with high alcohol consumption actually lies in the top fifth of health status. So it might be that at the age of these students, good health enables high alcohol consumption, while the negative effects of that consumption to health are still negligible.
+
+Overall, the relationship between health and high alcohol consumption seems to be weak here.
+
+We will now fit a logistic regression model with these variables:
+
+```{r model}
+m <- glm(high_use ~ activities + freetime + goout + health, data = alc, family = "binomial")
+summary(m)
+```
+
+Only the variable 'goout' has statistically significant relationship with high/low alcohol consumption in this model. We should look at the odds ratios and their confidence intervals:
+
+```{r odds_ratios}
+OR <- coef(m) %>% exp()
+CI <- coef(m) %>% exp()
+cbind(OR, CI)
+```
+
+Indeed, confidence intervals for odds ratios of all other variables contain 1, the break-even point so it makes sense that their predictive power would be low. Concerning the working hypothesis, the hypothesis holds for 'goout', but other relationships are perhaps even weaker than anticipated, at least in this particular model.
+
+We will now fit a new model with the only significant variable, 'goout':
+
+```{r new_model}
+m_goout <- glm(high_use ~ goout, data = alc, family = "binomial")
+summary(m_goout)
+```
+
+We will use this model to make predictions:
+
+```{r predictions}
+probabilities <- predict(m_goout, type = "response")
+predictions <- (probabilities > 0.5)
+table(high_use = alc$high_use, prediction = predictions)
+```
+
+103 predictions out of 382 were wrong, so the predictive power is not especially high even if it is better than a simple coin flip.
+
+Lastly, we will try cross validation:
+
+```{r cross_validation}
+# loss_func from DataCamp exercises
+loss_func <- function(class, prob) {
+  n_wrong <- abs(class - prob) > 0.5
+  mean(n_wrong)
+}
+
+cv <- cv.glm(data = alc, cost = loss_func, glmfit = m_goout, K = 10)
+
+cv$delta[1]
+```
+
+The model has about the same performance as the one in DataCamp exercises, but using just one variable for predictions.
