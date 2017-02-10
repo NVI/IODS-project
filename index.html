@@ -342,14 +342,15 @@ summary(m)</code></pre>
 ## Number of Fisher Scoring iterations: 4</code></pre>
 <p>Only the variable ‘goout’ has statistically significant relationship with high/low alcohol consumption in this model. We should look at the odds ratios and their confidence intervals:</p>
 <pre class="r"><code>OR &lt;- coef(m) %&gt;% exp()
-CI &lt;- coef(m) %&gt;% exp()
-cbind(OR, CI)</code></pre>
-<pre><code>##                       OR         CI
-## (Intercept)   0.01921623 0.01921623
-## activitiesyes 0.69538475 0.69538475
-## freetime      1.12587388 1.12587388
-## goout         2.10684951 2.10684951
-## health        1.13304588 1.13304588</code></pre>
+CI &lt;- confint(m) %&gt;% exp()</code></pre>
+<pre><code>## Waiting for profiling to be done...</code></pre>
+<pre class="r"><code>cbind(OR, CI)</code></pre>
+<pre><code>##                       OR       2.5 %     97.5 %
+## (Intercept)   0.01921623 0.005488501 0.06222816
+## activitiesyes 0.69538475 0.430469070 1.11809527
+## freetime      1.12587388 0.866572754 1.46498319
+## goout         2.10684951 1.670305678 2.69462900
+## health        1.13304588 0.954811883 1.35049332</code></pre>
 <p>Indeed, confidence intervals for odds ratios of all other variables contain 1, the break-even point so it makes sense that their predictive power would be low. Concerning the working hypothesis, the hypothesis holds for ‘goout’, but other relationships are perhaps even weaker than anticipated, at least in this particular model.</p>
 <p>We will now fit a new model with the only significant variable, ‘goout’:</p>
 <pre class="r"><code>m_goout &lt;- glm(high_use ~ goout, data = alc, family = &quot;binomial&quot;)

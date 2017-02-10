@@ -67,7 +67,7 @@ Only the variable 'goout' has statistically significant relationship with high/l
 
 ```{r odds_ratios}
 OR <- coef(m) %>% exp()
-CI <- coef(m) %>% exp()
+CI <- confint(m) %>% exp()
 cbind(OR, CI)
 ```
 
