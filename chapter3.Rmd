@@ -65,7 +65,7 @@ summary(m)
 
 Only the variable 'goout' has statistically significant relationship with high/low alcohol consumption in this model. We should look at the odds ratios and their confidence intervals:
 
-```{r odds_ratios}
+```{r odds_ratios, message = FALSE}
 OR <- coef(m) %>% exp()
 CI <- confint(m) %>% exp()
 cbind(OR, CI)
