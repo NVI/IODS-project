@@ -1,20 +1,18 @@
 # Logistic regression
 
-```{r load_libraries, warning = FALSE}
-library(ggplot2)
-library(GGally)
+```{r load_libraries_ch3, warning = FALSE}
 library(tibble)
 library(magrittr)
 library(boot)
 ```
 
-```{r load_data}
+```{r load_data_ch3}
 alc <- read.csv("data/alc.csv")
 ```
 
 We are looking at the [UCI Student Alcohol Consumption dataset](https://archive.ics.uci.edu/ml/datasets/STUDENT+ALCOHOL+CONSUMPTION). Here is a glimpse of it:
 
-```{r structural_overview}
+```{r structural_overview_ch3}
 glimpse(alc)
 ```
 
