@@ -36,6 +36,8 @@ boston_scaled %<>%
   )
 ```
 
+After standardization, all variables have mean 0 and variance 1.
+
 For linear discriminant analysis, we will assign 80% of the data to a train set and the rest to a test set:
 
 ```{r train_and_test_sets}
@@ -85,3 +87,26 @@ qplot(1:20, twcss)
 km4 <- kmeans(boston_dist, centers = 4)
 pairs(boston_kmeans, col = km4$cluster)
 ```
+
+We can also look at LDA for these clusters:
+
+```{r cluster_lda}
+# arrows function from DataCamp exercises
+# based originally on this one here:
+# http://stackoverflow.com/questions/17232251/how-can-i-plot-a-biplot-for-lda-in-r
+lda.arrows <- function(x, myscale = 1, arrow_heads = 0.1, color = "red", tex = 0.75, choices = c(1,2)){
+  heads <- coef(x)
+  arrows(x0 = 0, y0 = 0, 
+         x1 = myscale * heads[,choices[1]], 
+         y1 = myscale * heads[,choices[2]], col=color, length = arrow_heads)
+  text(myscale * heads[,choices], labels = row.names(heads), 
+       cex = tex, col=color, pos=3)
+}
+
+boston_kmeans$cluster <- km4$cluster
+lda.cluster <- lda(cluster ~ ., data = boston_kmeans)
+plot(lda.cluster, dimen = 2, col = km4$cluster)
+lda.arrows(lda.cluster, myscale = 1.5)
+```
+
+Even in 2 dimensions the LDA seems to divide the clusters pretty neatly, though there is some overlap. Variables "indus" (proportion of non-retail business acres per town) and "zn" (proportion of residential land zoned for lots over 25,000 sq.ft.) are the most influential separators; and notably both are measures of land allocation.
