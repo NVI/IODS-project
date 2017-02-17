@@ -1,0 +1,87 @@
+# Clustering and classification
+
+```{r load_libraries_ch4, warning = FALSE, message = FALSE}
+library(MASS)
+library(magrittr)
+library(dplyr)
+library(ggplot2)
+```
+
+```{r load_data_ch4}
+data("Boston")
+```
+
+We are looking at the "Housing Values in Suburbs of Boston" dataset from the MASS package.
+
+```{r structure_ch4}
+str(Boston)
+```
+
+```{r summary_ch4}
+summary(Boston)
+```
+
+```{r graphical_overview_ch4}
+pairs(Boston)
+```
+
+We will now standardize the dataset and transform crime rate variable into a categorical one:
+
+```{r standarization}
+boston_scaled <- as.data.frame(scale(Boston))
+summary(boston_scaled)
+boston_scaled %<>%
+  mutate(
+    crim = cut(crim, breaks = quantile(crim), label = c("l", "ml", "mh", "h"), include.lowest = TRUE)
+  )
+```
+
+For linear discriminant analysis, we will assign 80% of the data to a train set and the rest to a test set:
+
+```{r train_and_test_sets}
+idx_sample <- sample(nrow(boston_scaled), .8*nrow(boston_scaled))
+train <- boston_scaled[idx_sample, ]
+test <- boston_scaled[-idx_sample, ]
+```
+
+Next we fit the linear discriminant analysis for the categorical crime rate variable:
+
+```{r lda}
+lda.fit <- lda(crim ~ ., data = train)
+plot(lda.fit, dimen = 2, col = as.numeric(train$crim))
+```
+
+Using the LDA we will try to predict crime rates for the test set:
+
+```{r lda_predict}
+crime_observed <- test$crim
+train %<>% dplyr::select(-crim)
+crime_predicted <- predict(lda.fit, newdata = test)
+table(crime_observed, crime_predicted$class)
+```
+
+The predictions are good and only very rarely more than one category away from observed.
+
+Finally we will try clustering with the k-means method:
+
+```{r k_means}
+# no need to reload Boston dataset since we have not edited it at all
+boston_kmeans <- as.data.frame(scale(Boston))
+boston_dist <- dist(boston_kmeans)
+km <- kmeans(boston_dist, centers = 10)
+pairs(boston_kmeans, col = km$cluster)
+```
+
+10 clusters is probably too much, so we will want to see how good results are with less clusters:
+
+```{r ideal_clusters}
+twcss <- sapply(1:20, function(.) {kmeans(boston_dist, .)$tot.withinss})
+qplot(1:20, twcss)
+```
+
+2 clusters already gives good results, but there seems to be value in going for 3 or maybe even 4 clusters. We will run the algorithm again for 4 clusters and visualize:
+
+```{r k_means_contd}
+km4 <- kmeans(boston_dist, centers = 4)
+pairs(boston_kmeans, col = km4$cluster)
+```

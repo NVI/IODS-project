@@ -1,6 +1,7 @@
 *.html
 *.csv
 *.Rproj
+*.Rds
 .Rproj.user
 .Rhistory
 .RData
