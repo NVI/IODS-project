@@ -4,6 +4,7 @@
 library(magrittr)
 library(dplyr)
 library(ggplot2)
+library(FactoMineR)
 ```
 
 ```{r load_data_ch5}
@@ -56,3 +57,28 @@ The first principal component has high positive correlation with maternal mortal
 The second principal component has high positive correlation with female parliamentary representation and labour force participation compared to corresponding figures for men. This component could be interpreted as how gender equality actually materializes given the means.
 
 Countries at the far ends include Nordic countries and the Low Countries (high means, high materialization), Middle Eastern OPEC countries (high means, low materialization) and West, Central and East African countries with low means but differing levels of materialization.
+
+Lastly we will take a look at six basically randomly chosen columns from the tea drinking data that comes with FactoMineR package.
+
+```{r tea}
+data(tea)
+tea_part <- tea %>% select(Tea, sugar, friends, spirituality, feminine, relaxing)
+```
+
+```{r structure_tea}
+str(tea_part)
+```
+
+```{r summary_tea}
+summary(tea_part)
+```
+
+We will experiment with multiple correspondence analysis (MCA) using these columns:
+
+```{r mca}
+mca_tea <- MCA(tea_part, graph = FALSE)
+summary(mca_tea)
+plot(mca_tea, invisible=c("ind"), habillage = "quali")
+```
+
+Earl Grey is very similar to spirituality, friends, relaxation and femininity. Green and black, while outliers altogether, are more similar to the opposites. I am at a loss for a sociological or nutritional explanation.
