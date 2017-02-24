@@ -1,8 +1,10 @@
 # Niko Ilomäki
-# Feb 17, 2017
+# Feb 17-24, 2017
+# Preprocesses UN HDI and GII data
+# http://hdr.undp.org/en/content/human-development-index-hdi
 
 # Load libraries
-library(magrittr) # %<>% : <- + %>%
+library(magrittr) # %<>%, %T>%, set_rownames, extract2
 library(dplyr)
 
 # Load datasets
@@ -52,10 +54,17 @@ gii %<>%
   )
 
 # Join datasets
-human <- inner_join(hd, gii, by = "country")
-
-# Save joined data in serialized R object format
-human %>% saveRDS("data/human.Rds")
+human <-
+  inner_join(hd, gii, by = "country") %>% # Join datasets
+  mutate(gni_per_capita = as.numeric(gsub(",","",gni_per_capita))) %>% # Convert GNI to numeric
+  filter(!is.na(hdi_rank)) %>% # Remove index rows
+  select(country, secondary_education_rate, labour_force_rate, expected_education,
+         life_expectancy, gni_per_capita, maternal_mortality, adolescent_birth,
+         parliamentary_representation) %>% # Exclude unnecessary variables
+  filter(apply(., 1, function(x) sum(is.na(x)) == 0)) %>% # Remove all rows with missing values
+  set_rownames(extract2(., "country")) %>% # Set row.names
+  select(-country) %T>% # Drop 'country' column
+  saveRDS("data/human.Rds") # Save data in serialized R object format
 
 # Load data again
 # human <- readRDS("data/human.Rds")
