@@ -1,0 +1,58 @@
+# Dimensionality reduction techniques
+
+```{r load_libraries_ch5, warning = FALSE, message = FALSE}
+library(magrittr)
+library(dplyr)
+library(ggplot2)
+```
+
+```{r load_data_ch5}
+human <- readRDS("data/human.Rds")
+```
+
+We are looking at subset of the United Nations' Human Development Index (HDI) and Gender Inequality Index (GII) data.
+
+```{r structure_ch5}
+str(human)
+```
+
+The data has 8 variables:
+
++ secondary_education_rate: percentage of women with secondary education divided by percentage of men with secondary education
++ labour_force_rate: as above, but for labor force participation
++ expected_education: expected years of education for children at school entrance age
++ life_expectancy: life expectancy for newly born children
++ gni_per_capita: gross national income (GNI) per capita
++ maternal_mortality: number of maternal deaths per 100 000 births
++ adolescent_birth: number of births per 1000 women aged 15-19
++ parliamentary_representation: percentage of women in parliament (not sure how this is calculated for non-democracies)
+
+```{r summary_ch5}
+summary(human)
+```
+
+```{r graphical_overview_ch5}
+pairs(human)
+```
+
+```{r pca_nonstandardized, warning = FALSE}
+pca_human <- prcomp(human)
+summary(pca_human)
+biplot(pca_human, cex = c(0.7, 1), col = c("navy", "lightcoral"))
+```
+
+In the case of nonstandardized data, the variable 'gni_per_capita' dominates the analysis capturing more than 99.9% of the variance. This is because it has by far the largest mean and variance in absolute terms. This also renders the whole analysis meaningless, so we should focus on the case with standardized variables:
+
+```{r pca_standardized}
+pca_human_scaled <- prcomp(scale(human))
+summary(pca_human_scaled)
+biplot(pca_human_scaled, cex = c(0.7, 1), col = c("navy", "lightcoral"))
+```
+
+With standardized variables, a more interesting picture emerges. Especially, here all 8 original variables are almost parallel to one of the axes (principal components) so it seems reasonable to think there could be a tangible link between the principal components and real world.
+
+The first principal component has high positive correlation with maternal mortality and adolescent births, and high negative correlation with life expectancy, GNI per capita, expected years of education, and female education compared to male education. This component could be interpreted as the kind of means the country has to provide an environment of gender equality.
+
+The second principal component has high positive correlation with female parliamentary representation and labour force participation compared to corresponding figures for men. This component could be interpreted as how gender equality actually materializes given the means.
+
+Countries at the far ends include Nordic countries and the Low Countries (high means, high materialization), Middle Eastern OPEC countries (high means, low materialization) and West, Central and East African countries with low means but differing levels of materialization.
